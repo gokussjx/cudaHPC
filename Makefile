@@ -237,7 +237,7 @@ run: build
 	$(EXEC) ./driver
 
 clean:
-	rm -f driver driver.o   ./data/lena_bw_out.pgm
+	rm -f driver driver.o lena_out.pgm
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/driver
 
 clobber: clean

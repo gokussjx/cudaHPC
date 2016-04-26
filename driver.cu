@@ -18,7 +18,7 @@
 // CUDA helper functions
 #include <helper_cuda.h>         // helper functions for CUDA error check
 
-#define MIN_EPSILON_ERROR 5e-3f
+// #define MIN_EPSILON_ERROR 5e-3f
 
 ////////////////////////////////////////////////////////////////////////////////
 // Define the files that are to be save and the reference images for validation
@@ -42,7 +42,7 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 
   const unsigned short windowSize = filterSize * filterSize;
   // unsigned short window[windowSize];
-  unsigned short *window = new unsigned short[windowSize];
+  float *window = new float[windowSize];
 
   int iterator;
 
@@ -77,6 +77,8 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
   // --- Pick the middle one
   outputData[y * width + x] = window[windowSize/2]; 
 
+  free(window);
+
   // float u = (float)x - (float)width/2; 
   // float v = (float)y - (float)height/2; 
   // float tu = u*cosf(theta) - v*sinf(theta); 
@@ -98,20 +100,20 @@ int main(int argc, char **argv) {
   //printf("%s starting...\n", sampleName);
 
   // Process command-line arguments
-  if (argc == 1) {
-    if (checkCmdLineFlag(argc, (const char **) argv, "input")) {
-      getCmdLineArgumentString(argc, (const char **) argv, "input", (char **) &imageFilename);
+  // if (argc == 1) {
+    // if (checkCmdLineFlag(argc, (const char **) argv, "input")) {
+    //   getCmdLineArgumentString(argc, (const char **) argv, "input", (char **) &imageFilename);
 
-      // if (checkCmdLineFlag(argc, (const char **) argv, "reference")) {
-      //     getCmdLineArgumentString(argc,
-      //                              (const char **) argv,
-      //                              "reference",
-      //                              (char **) &refFilename);
-    } else {
-      printf("-input flag should be used");
-      exit(EXIT_FAILURE);
-    }
-  }
+    //   // if (checkCmdLineFlag(argc, (const char **) argv, "reference")) {
+    //   //     getCmdLineArgumentString(argc,
+    //   //                              (const char **) argv,
+    //   //                              "reference",
+    //   //                              (char **) &refFilename);
+    // } else {
+    //   printf("-input flag should be used");
+    //   exit(EXIT_FAILURE);
+    // }
+  // }
 
   runTest(argc, argv);
   cudaDeviceReset();
@@ -149,31 +151,38 @@ void runTest(int argc, char **argv) {
 
   // sdkLoadPGM(refPath, &hDataRef, &width, &height);
 
+  // Copy input data to device
+  float *hData = NULL;
+  checkCudaErrors(cudaMalloc((void **) &hData, size));
+
   // Allocate device memory for result
   float *dData = NULL;
   checkCudaErrors(cudaMalloc((void **) &dData, size));
 
   // Allocate array and copy image data
-  //cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
-  //cudaArray *cuArray;
-  //checkCudaErrors(cudaMallocArray(&cuArray, &channelDesc, width, height));
-  //checkCudaErrors(cudaMemcpyToArray(cuArray, 0, 0, hData, size, cudaMemcpyHostToDevice));
+  // cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
+  // cudaArray *cuArray;
+  // checkCudaErrors(cudaMallocArray(&cuArray, &channelDesc, width, height));
+  // checkCudaErrors(cudaMemcpyToArray(cuArray, 0, 0, hData, size, cudaMemcpyHostToDevice));
+  // checkCudaErrors(cudaMemcpyToArray(cuArray, 0, 0, inputData, size, cudaMemcpyHostToDevice));
 
-  // Set texture parameters
-  //tex.addressMode[0] = cudaAddressModeWrap;
-  //tex.addressMode[1] = cudaAddressModeWrap;
-  //tex.filterMode = cudaFilterModeLinear;
-  //tex.normalized = true;    // access with normalized texture coordinates
+  // // Set texture parameters
+  // tex.addressMode[0] = cudaAddressModeWrap;
+  // tex.addressMode[1] = cudaAddressModeWrap;
+  // tex.filterMode = cudaFilterModeLinear;
+  // tex.normalized = true;    // access with normalized texture coordinates
 
   // Bind the array to the texture
-  //checkCudaErrors(cudaBindTextureToArray(tex, cuArray, channelDesc));
+  // checkCudaErrors(cudaBindTextureToArray(tex, cuArray, channelDesc));
 
-  dim3 dimBlock(8, 8, 1);
+  checkCudaErrors(cudaMemcpy(hData, inputData, size, cudaMemcpyHostToDevice));
+
+  dim3 dimBlock(16, 16, 1);
   dim3 dimGrid(width / dimBlock.x, height / dimBlock.y, 1);
 
   // Warmup
   // transformKernel<<<dimGrid, dimBlock, 0>>>(dData, width, height, angle);
-
+  // medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, 3);
 
   checkCudaErrors(cudaDeviceSynchronize());
   StopWatchInterface *timer = NULL;
@@ -182,7 +191,7 @@ void runTest(int argc, char **argv) {
 
   // Execute the kernel
   //transformKernel<<<dimGrid, dimBlock, 0>>>(dData, width, height, angle);
-  medianFilterKernel<<<dimGrid, dimBlock, 0>>>(inputData, dData, width, height, 3);
+  medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, 3);
 
   // Check if kernel execution generated an error
   getLastCudaError("Kernel execution failed");
