@@ -140,6 +140,11 @@ void runTest(int argc, char **argv) {
 
   sdkLoadPGM(imagePath, &inputData, &width, &height);
 
+  FILE * pFile;
+  pFile = fopen ("inputDataFile.txt", "wb");
+  fwrite(inputData, 128, 1, pFile);
+  fclose(pFile);
+
   unsigned int size = width * height * sizeof(float);
   printf("Loaded '%s', %d x %d pixels\n", imageFilename, width, height);
 
