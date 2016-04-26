@@ -40,17 +40,17 @@ bool testResult = true;
 __global__ void medianFilterKernel(float *inputData, float *outputData, int width, int height, int filterSize)
 {
 
-  const unsigned short windowSize = filterSize * filterSize;
+//  const unsigned short windowSize = filterSize * filterSize;
   // unsigned short window[windowSize];
-  float *window = new float[windowSize];
+//  float *window = new float[windowSize];
 
-  int iterator;
+//  int iterator;
 
   // calculate normalized texture coordinates
   const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
   const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
   //const unsigned int tid = threadIdx.y * blockDim.x + threadIdx.x; 
-
+/*
   if( (x >= (width - 1)) || (y >= height - 1) || (x == 0) || (y == 0)) return;
 
   // --- Fill array private to the threads
@@ -76,8 +76,12 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 
   // --- Pick the middle one
   outputData[y * width + x] = window[windowSize/2]; 
+*/
+//  free(window);
 
-  free(window);
+  outputData[y * width + x] = inputData[y * width + x]; 
+
+  outputData[y * width + x] = outputData[y * width + x];
 
   // float u = (float)x - (float)width/2; 
   // float v = (float)y - (float)height/2; 
