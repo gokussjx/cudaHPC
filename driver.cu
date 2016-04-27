@@ -32,7 +32,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 // Define the files that are to be save and the reference images for validation
-const char *imageFilename = "lena.pgm";
+// const char *imageFilename = "lena.pgm";
 //const char *refFilename   = "ref_rotated.pgm";
 
 // Declare texture reference for 2D float texture
@@ -77,7 +77,7 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
     for (int l = i + 1; l < windowSize; ++l) if (window[l] < window[minVal]) minVal = l;
 
     // --- Put found minimum element in its place
-    unsigned short temp = window[i];
+    float temp = window[i];
     window[i] = window[minVal];
     window[minVal] = temp;
   }
@@ -137,9 +137,35 @@ int main(int argc, char **argv) {
 void runTest(int argc, char **argv) {
   int devID = findCudaDevice(argc, (const char **) argv);
 
+  // Take input, if given
+  int windowSize;
+  const char *imageFilename = NULL;
+  const char *outputFilename = NULL;
+  if (argc == 4) {
+    // Take Window size
+    sscanf(argv[1], "%d", &windowSize);
+
+    // Take Input file name
+    imageFilename = argv[2];
+
+    // Take Output file name
+    outputFilename = argv[3];
+  } else if (argc == 1){
+    windowSize = 3;
+    imageFilename = "lena.pgm";
+    outputFilename = "lena_out.pgm";
+  } else {
+    printf("Usage: ./driver windowSize inputFile.pgm outputFile.pgm");
+  }
+
   // load image from disk
   unsigned int width, height;
   char *imagePath = sdkFindFilePath(imageFilename, argv[0]);
+
+  printf("ARGC: %d\n", argc);
+  printf("ARGV[0]: %s\n", argv[0]);
+  printf("ARGV[1]: %s\n", argv[1]);
+  printf("IMAGEPATH: %s\n", imagePath);
 
   if (imagePath == NULL) {
     printf("Unable to source image file: %s\n", imageFilename);
@@ -187,23 +213,6 @@ void runTest(int argc, char **argv) {
   float *dData = NULL;
   checkCudaErrors(cudaMalloc((void **) &dData, size));
 
-  // Allocate array and copy image data
-  // cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
-  // cudaArray *cuArray;
-  // checkCudaErrors(cudaMallocArray(&cuArray, &channelDesc, width, height));
-  // checkCudaErrors(cudaMemcpyToArray(cuArray, 0, 0, hData, size, cudaMemcpyHostToDevice));
-  // checkCudaErrors(cudaMemcpyToArray(cuArray, 0, 0, inputData, size, cudaMemcpyHostToDevice));
-
-  // // Set texture parameters
-  // tex.addressMode[0] = cudaAddressModeWrap;
-  // tex.addressMode[1] = cudaAddressModeWrap;
-  // tex.filterMode = cudaFilterModeLinear;
-  // tex.normalized = true;    // access with normalized texture coordinates
-
-  // Bind the array to the texture
-  // checkCudaErrors(cudaBindTextureToArray(tex, cuArray, channelDesc));
-
-  // checkCudaErrors(cudaMemcpy(hData, inputData, size, cudaMemcpyHostToDevice));
   checkCudaErrors(cudaMemcpy(hData, INPUT_RAW, size, cudaMemcpyHostToDevice));
 
   dim3 dimBlock(16, 16, 1);
@@ -220,7 +229,7 @@ void runTest(int argc, char **argv) {
 
   // Execute the kernel
   //transformKernel<<<dimGrid, dimBlock, 0>>>(dData, width, height, angle);
-  medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, 3);
+  medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, windowSize);
 
   // Check if kernel execution generated an error
   getLastCudaError("Kernel execution failed");
@@ -239,9 +248,6 @@ void runTest(int argc, char **argv) {
   checkCudaErrors(cudaMemcpy(hOutputData, dData, size, cudaMemcpyDeviceToHost));
   
   // Write result to file
-  char outputFilename[1024];
-  strcpy(outputFilename, imagePath);
-  strcpy(outputFilename + strlen(imagePath) - 4, "_out.pgm");
   sdkSavePGM(outputFilename, hOutputData, width, height);
   printf("Wrote '%s'\n", outputFilename);
   
@@ -267,4 +273,6 @@ void runTest(int argc, char **argv) {
   free(imagePath);
   // free(refPath);
   free(inputData);
+  // free(imageFilename);
+  // free(outputFilename);
 }
