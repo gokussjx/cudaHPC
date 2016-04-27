@@ -68,7 +68,8 @@ int main(int argc, char *argv[]){
 #endif
 
 #ifdef P5
-        fwrite(median_filter(x,y), 1, 1, stdout);
+        memset(tmp, median_filter(x,y), 1);
+        fwrite(tmp, 1, 1, stdout);
 #endif
     }
     return 0;
