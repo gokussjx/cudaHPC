@@ -3,20 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-#define DIMENSION 512
-
-#ifdef _WIN32
-#  define WINDOWS_LEAN_AND_MEAN
-#  define NOMINMAX
-#  include <windows.h>
-#endif
-
 // Includes CUDA
 #include <cuda_runtime.h>
 
@@ -26,33 +12,22 @@
 // CUDA helper functions
 #include <helper_cuda.h>         // helper functions for CUDA error check
 
-#define INPUT(I,x,y) input##I[((y)*(512*3))+(x)*3]
+#define DIMENSION 512
+#define INPUT_RAW inputData
 
 // #define MIN_EPSILON_ERROR 5e-3f
-
-////////////////////////////////////////////////////////////////////////////////
-// Define the files that are to be save and the reference images for validation
-// const char *imageFilename = "lena.pgm";
-//const char *refFilename   = "ref_rotated.pgm";
-
-// Declare texture reference for 2D float texture
-// texture<float, 2, cudaReadModeElementType> tex;
 
 // Auto-Verification Code
 bool testResult = true;
 
-////////////////////////////////////////////////////////////////////////////////
-//! Perform Median Filter on data
-//! @param outputData  output data in global memory
-////////////////////////////////////////////////////////////////////////////////
+// Perform Median Filter on data
 __global__ void medianFilterKernel(float *inputData, float *outputData, int width, int height, int filterSize)
 {
 
- const unsigned short windowSize = filterSize * filterSize;
-  // unsigned short window[windowSize];
- float *window = new float[windowSize];
+  const unsigned int windowSize = filterSize * filterSize;
+  float window[DIMENSION];
 
- int iterator;
+  int iterator;
 
   // calculate normalized texture coordinates
   const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -63,14 +38,19 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
   int radiusY = filterSize / 2;
 
   // if( (x >= (width - radiusX)) || (y >= height - radiusY) || (x == 0) || (y == 0)) return;
-  if( (x >= (width - radiusX)) || (y >= height - radiusY) || (x == 0) || (y == 0)) return;
+  if( (x >= (width - radiusX)) || (y >= height - radiusY) || (x == 0) || (y == 0)) {
+    outputData[y * width + x] = inputData[y * width + x];
+    return;
+  }
 
   // --- Fill array private to the threads
   iterator = 0;
   for (int row = x - radiusX; row <= x + radiusX; row++) {
     for (int column = y - radiusY; column <= y + radiusY; column++) {
+      if (iterator < windowSize && iterator >= 0) {
       window[iterator] = inputData[column * width + row];
       iterator++;
+      }
     }
   }
 
@@ -88,49 +68,13 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 
   // --- Pick the middle one
   outputData[y * width + x] = window[windowSize/2]; 
-
-  free(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Declaration, forward
-float load_buffer[DIMENSION*DIMENSION];
-float* load(int fd){
-    int ct0a=4; struct stat _fstat;
-    if (fstat(fd, &_fstat) == -1) { perror("fstat()"); exit(1); }
-    unsigned char *p=(unsigned char*)mmap(NULL, _fstat.st_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
-    do{ p=(unsigned char*)memchr(p, 0x0a, 64)+1; } while(--ct0a);
-    for(int i=0;i<DIMENSION*DIMENSION;++i) // abandon green/blue channels
-      load_buffer[i]=(float)p[i*3]/255.0f; // this is what sdkLoadPGM acutally does according to hexdump
-    return load_buffer;
-}
 void runTest(int argc, char **argv);
 
 int main(int argc, char **argv) {
-#if 0 // This does not work. Why? Only supports P5 format?
-  float *inputData = NULL; unsigned width, height;
-  sdkLoadPGM(sdkFindFilePath("lena.pgm", argv[0]), &inputData, &width, &height);
-  sdkSavePGM("lena_out.pgm", inputData, width, height);
-  exit(0);
-#endif
-
-  //printf("%s starting...\n", sampleName);
-
-  // Process command-line arguments
-  // if (argc == 1) {
-    // if (checkCmdLineFlag(argc, (const char **) argv, "input")) {
-    //   getCmdLineArgumentString(argc, (const char **) argv, "input", (char **) &imageFilename);
-
-    //   // if (checkCmdLineFlag(argc, (const char **) argv, "reference")) {
-    //   //     getCmdLineArgumentString(argc,
-    //   //                              (const char **) argv,
-    //   //                              "reference",
-    //   //                              (char **) &refFilename);
-    // } else {
-    //   printf("-input flag should be used");
-    //   exit(EXIT_FAILURE);
-    // }
-  // }
 
   runTest(argc, argv);
   cudaDeviceReset();
@@ -166,48 +110,16 @@ void runTest(int argc, char **argv) {
   unsigned int width, height;
   char *imagePath = sdkFindFilePath(imageFilename, argv[0]);
 
-  printf("ARGC: %d\n", argc);
-  printf("ARGV[0]: %s\n", argv[0]);
-  printf("ARGV[1]: %s\n", argv[1]);
-  printf("IMAGEPATH: %s\n", imagePath);
-
   if (imagePath == NULL) {
     printf("Unable to source image file: %s\n", imageFilename);
     exit(EXIT_FAILURE);
   }
 
-#if 1
-#define INPUT_RAW inputData
   float *inputData = NULL;
   sdkLoadPGM(imagePath, &inputData, &width, &height);
-#else
-#define INPUT_RAW input1
-  float *input1=load(open("lena.ppm", O_RDONLY));
-  width = height = DIMENSION;
-#endif
-  // {
-  //   FILE * pFile;
-  //   pFile = fopen ("inputDataFile.txt", "wb");
-  //   printf("input[0]: %f\n", INPUT_RAW[0]);
-  //   fwrite(INPUT_RAW, 128, 1, pFile);
-  //   fclose(pFile);
-  // }
-
 
   unsigned int size = width * height * sizeof(float);
   printf("Loaded '%s', %d x %d pixels\n", imageFilename, width, height);
-
-  //Load reference image from image (output)
-  // float *hDataRef = (float *) malloc(size);
-  // char *refPath = sdkFindFilePath(refFilename, argv[0]);
-
-  // if (refPath == NULL)
-  // {
-  //     printf("Unable to find reference image file: %s\n", refFilename);
-  //     exit(EXIT_FAILURE);
-  // }
-
-  // sdkLoadPGM(refPath, &hDataRef, &width, &height);
 
   // Copy input data to device
   float *hData = NULL;
@@ -223,8 +135,7 @@ void runTest(int argc, char **argv) {
   dim3 dimGrid(width / dimBlock.x, height / dimBlock.y, 1);
 
   // Warmup
-  // transformKernel<<<dimGrid, dimBlock, 0>>>(dData, width, height, angle);
-  // medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, 3);
+  medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, windowSize);
 
   checkCudaErrors(cudaDeviceSynchronize());
   StopWatchInterface *timer = NULL;
@@ -232,7 +143,6 @@ void runTest(int argc, char **argv) {
   sdkStartTimer(&timer);
 
   // Execute the kernel
-  //transformKernel<<<dimGrid, dimBlock, 0>>>(dData, width, height, angle);
   medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, windowSize);
 
   // Check if kernel execution generated an error
@@ -267,16 +177,10 @@ void runTest(int argc, char **argv) {
 
     printf("Comparing files\n");
     printf("\toutput:    <%s>\n", outputFilename);
-    // printf("\treference: <%s>\n", refPath);
-
-    // testResult = compareData(hOutputData, hDataRef, width*height, MAX_EPSILON_ERROR, 0.15f);
+    
   }
 
   checkCudaErrors(cudaFree(dData));
-  // checkCudaErrors(cudaFreeArray(cuArray));
   free(imagePath);
-  // free(refPath);
   free(inputData);
-  // free(imageFilename);
-  // free(outputFilename);
 }
