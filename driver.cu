@@ -179,6 +179,9 @@ void runTest(int argc, char **argv) {
     printf("\toutput:    <%s>\n", outputFilename);
     
   }
+  
+  system("bin/standard 3 lena.pgm > lena_out.pgm");
+  system("bin/diff lena.pgm lena_out.pgm");
 
   checkCudaErrors(cudaFree(dData));
   free(imagePath);
