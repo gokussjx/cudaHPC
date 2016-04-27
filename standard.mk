@@ -19,7 +19,7 @@ export CCFLAGS=-std=c++11 -O2 $(CXXWARNS) -iquote $(INCLUDE)
 # =================
 # Register binary targets here then add rules at the bottom
 # =================
-TARGETS=standard diff p6p5 #hello
+TARGETS=standard diff p6p5 diffb #hello
 
 # =================
 # General rules

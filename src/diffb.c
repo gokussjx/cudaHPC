@@ -1,13 +1,13 @@
 #include "standard.h"
 #ifdef P6
 #define INPUT(I,x,y) input##I[((y)*(DIM*3))+(x)*3]
-color tmp[3];
 #endif
 
 #ifdef P5
 #define INPUT(I,x,y) input##I[((y)*(DIM))+(x)]
 #endif
 
+color tmp[3];
 color* load(int fd){
     int ct0a=4; struct stat _fstat;
     if (fstat(fd, &_fstat) == -1) { perror("fstat()"); exit(1); }
