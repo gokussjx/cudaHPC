@@ -36,31 +36,29 @@ const char *imageFilename = "lena.pgm";
 //const char *refFilename   = "ref_rotated.pgm";
 
 // Declare texture reference for 2D float texture
-texture<float, 2, cudaReadModeElementType> tex;
+// texture<float, 2, cudaReadModeElementType> tex;
 
 // Auto-Verification Code
 bool testResult = true;
 
-// __global__ float *inputData = NULL;
-
 ////////////////////////////////////////////////////////////////////////////////
-//! Perform Median Calculations on texture data
+//! Perform Median Filter on data
 //! @param outputData  output data in global memory
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void medianFilterKernel(float *inputData, float *outputData, int width, int height, int filterSize)
 {
 
-//  const unsigned short windowSize = filterSize * filterSize;
+ const unsigned short windowSize = filterSize * filterSize;
   // unsigned short window[windowSize];
-//  float *window = new float[windowSize];
+ float *window = new float[windowSize];
 
-//  int iterator;
+ int iterator;
 
   // calculate normalized texture coordinates
   const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
   const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
   //const unsigned int tid = threadIdx.y * blockDim.x + threadIdx.x; 
-/*
+
   if( (x >= (width - 1)) || (y >= height - 1) || (x == 0) || (y == 0)) return;
 
   // --- Fill array private to the threads
@@ -86,23 +84,8 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 
   // --- Pick the middle one
   outputData[y * width + x] = window[windowSize/2]; 
-*/
-//  free(window);
 
-  outputData[y * width + x] = inputData[y * width + x]; 
-
-  // outputData[y * width + x] = outputData[y * width + x];
-
-  // float u = (float)x - (float)width/2; 
-  // float v = (float)y - (float)height/2; 
-  // float tu = u*cosf(theta) - v*sinf(theta); 
-  // float tv = v*cosf(theta) + u*sinf(theta); 
-
-  // tu /= (float)width; 
-  // tv /= (float)height; 
-
-  // // read from texture and write to global memory
-  // outputData[y*width + x] = tex2D(tex, tu+0.5f, tv+0.5f);
+  free(window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -251,11 +234,9 @@ void runTest(int argc, char **argv) {
 
   // Allocate mem for the result on host side
   float *hOutputData = (float *) malloc(size);
+  
   // copy result from device to host
   checkCudaErrors(cudaMemcpy(hOutputData, dData, size, cudaMemcpyDeviceToHost));
-  // checkCudaErrors(cudaDeviceSynchronize());
-  // memcpy(hOutputData, INPUT_RAW, size);
-  // memset(hOutputData, 0, size);
   
   // Write result to file
   char outputFilename[1024];
@@ -264,14 +245,6 @@ void runTest(int argc, char **argv) {
   sdkSavePGM(outputFilename, hOutputData, width, height);
   printf("Wrote '%s'\n", outputFilename);
   
-  // {
-  //   FILE * pFile;
-  //   pFile = fopen ("outputDataFile.txt", "wb");
-  //   printf("output[0]: %f\n", hOutputData[0]);
-  //   fwrite(hOutputData, 128, 1, pFile);
-  //   fclose(pFile);
-  // }
-
   // Write regression file if necessary
   if (checkCmdLineFlag(argc, (const char **) argv, "regression"))
   {
@@ -293,5 +266,5 @@ void runTest(int argc, char **argv) {
   // checkCudaErrors(cudaFreeArray(cuArray));
   free(imagePath);
   // free(refPath);
-  //free(inputData);
+  free(inputData);
 }
