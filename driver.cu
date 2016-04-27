@@ -3,6 +3,15 @@
 #include <string.h>
 #include <math.h>
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <unistd.h>
+typedef unsigned char color;
+
+#define DIMENSION 512*3
+
 #ifdef _WIN32
 #  define WINDOWS_LEAN_AND_MEAN
 #  define NOMINMAX
@@ -17,6 +26,8 @@
 
 // CUDA helper functions
 #include <helper_cuda.h>         // helper functions for CUDA error check
+
+#define INPUT(I,x,y) input##I[((y)*(512*3))+(x)*3]
 
 // #define MIN_EPSILON_ERROR 5e-3f
 
@@ -79,9 +90,9 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 */
 //  free(window);
 
-  outputData[y * width + x] = inputData[y * width + x]; 
+  outputData[(y * width * 3) + (x * 3)] = inputData[(y * width * 3) + (x * 3)]; 
 
-  outputData[y * width + x] = outputData[y * width + x];
+  // outputData[y * width + x] = outputData[y * width + x];
 
   // float u = (float)x - (float)width/2; 
   // float v = (float)y - (float)height/2; 
@@ -97,6 +108,13 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 
 ////////////////////////////////////////////////////////////////////////////////
 // Declaration, forward
+color* load(int fd){
+    int ct0a=4; struct stat _fstat;
+    if (fstat(fd, &_fstat) == -1) { perror("fstat()"); exit(1); }
+    color *p=(color*)mmap(NULL, _fstat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    do{ p=(color*)memchr(p, 0x0a, 64)+1; } while(--ct0a);
+    return p;
+}
 void runTest(int argc, char **argv);
 
 int main(int argc, char **argv) {
@@ -129,7 +147,7 @@ void runTest(int argc, char **argv) {
   int devID = findCudaDevice(argc, (const char **) argv);
 
   // load image from disk
-  float *inputData = NULL;
+  // float *inputData = NULL;
   unsigned int width, height;
   char *imagePath = sdkFindFilePath(imageFilename, argv[0]);
 
@@ -138,11 +156,15 @@ void runTest(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  sdkLoadPGM(imagePath, &inputData, &width, &height);
+  // sdkLoadPGM(imagePath, &inputData, &width, &height);
+
+
+  color *input1=load(open("lena.ppm", O_RDONLY));
+  width = height = DIMENSION;
 
   FILE * pFile;
   pFile = fopen ("inputDataFile.txt", "wb");
-  fwrite(inputData, 128, 1, pFile);
+  fwrite(input1, 128, 1, pFile);
   fclose(pFile);
 
   unsigned int size = width * height * sizeof(float);
@@ -184,7 +206,8 @@ void runTest(int argc, char **argv) {
   // Bind the array to the texture
   // checkCudaErrors(cudaBindTextureToArray(tex, cuArray, channelDesc));
 
-  checkCudaErrors(cudaMemcpy(hData, inputData, size, cudaMemcpyHostToDevice));
+  // checkCudaErrors(cudaMemcpy(hData, inputData, size, cudaMemcpyHostToDevice));
+  checkCudaErrors(cudaMemcpy(hData, input1, size, cudaMemcpyHostToDevice));
 
   dim3 dimBlock(16, 16, 1);
   dim3 dimGrid(width / dimBlock.x, height / dimBlock.y, 1);
@@ -245,5 +268,5 @@ void runTest(int argc, char **argv) {
   // checkCudaErrors(cudaFreeArray(cuArray));
   free(imagePath);
   // free(refPath);
-  free(inputData);
+  //free(inputData);
 }
