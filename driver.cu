@@ -8,9 +8,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <unistd.h>
-typedef unsigned char color;
 
-#define DIMENSION 512*3
+#define DIMENSION 512
 
 #ifdef _WIN32
 #  define WINDOWS_LEAN_AND_MEAN
@@ -33,7 +32,7 @@ typedef unsigned char color;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Define the files that are to be save and the reference images for validation
-const char *imageFilename = "lena.ppm";
+const char *imageFilename = "lena.pgm";
 //const char *refFilename   = "ref_rotated.pgm";
 
 // Declare texture reference for 2D float texture
@@ -90,7 +89,7 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 */
 //  free(window);
 
-  outputData[(y * width * 3) + (x * 3)] = inputData[(y * width * 3) + (x * 3)]; 
+  outputData[y * width + x] = inputData[y * width + x]; 
 
   // outputData[y * width + x] = outputData[y * width + x];
 
@@ -108,16 +107,25 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
 
 ////////////////////////////////////////////////////////////////////////////////
 // Declaration, forward
-color* load(int fd){
+float load_buffer[DIMENSION*DIMENSION];
+float* load(int fd){
     int ct0a=4; struct stat _fstat;
     if (fstat(fd, &_fstat) == -1) { perror("fstat()"); exit(1); }
-    color *p=(color*)mmap(NULL, _fstat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    do{ p=(color*)memchr(p, 0x0a, 64)+1; } while(--ct0a);
-    return p;
+    unsigned char *p=(unsigned char*)mmap(NULL, _fstat.st_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+    do{ p=(unsigned char*)memchr(p, 0x0a, 64)+1; } while(--ct0a);
+    for(int i=0;i<DIMENSION*DIMENSION;++i) // abandon green/blue channels
+      load_buffer[i]=(float)p[i*3]/255.0f; // this is what sdkLoadPGM acutally does according to hexdump
+    return load_buffer;
 }
 void runTest(int argc, char **argv);
 
 int main(int argc, char **argv) {
+#if 0 // This does not work. Why? Only supports P5 format?
+  float *inputData = NULL; unsigned width, height;
+  sdkLoadPGM(sdkFindFilePath("lena.pgm", argv[0]), &inputData, &width, &height);
+  sdkSavePGM("lena_out.pgm", inputData, width, height);
+  exit(0);
+#endif
 
   //printf("%s starting...\n", sampleName);
 
@@ -147,7 +155,6 @@ void runTest(int argc, char **argv) {
   int devID = findCudaDevice(argc, (const char **) argv);
 
   // load image from disk
-  // float *inputData = NULL;
   unsigned int width, height;
   char *imagePath = sdkFindFilePath(imageFilename, argv[0]);
 
@@ -156,16 +163,23 @@ void runTest(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  // sdkLoadPGM(imagePath, &inputData, &width, &height);
-
-
-  color *input1=load(open("lena.ppm", O_RDONLY));
+#if 1
+#define INPUT_RAW inputData
+  float *inputData = NULL;
+  sdkLoadPGM(imagePath, &inputData, &width, &height);
+#else
+#define INPUT_RAW input1
+  float *input1=load(open("lena.ppm", O_RDONLY));
   width = height = DIMENSION;
+#endif
+  // {
+  //   FILE * pFile;
+  //   pFile = fopen ("inputDataFile.txt", "wb");
+  //   printf("input[0]: %f\n", INPUT_RAW[0]);
+  //   fwrite(INPUT_RAW, 128, 1, pFile);
+  //   fclose(pFile);
+  // }
 
-  FILE * pFile;
-  pFile = fopen ("inputDataFile.txt", "wb");
-  fwrite(input1, 128, 1, pFile);
-  fclose(pFile);
 
   unsigned int size = width * height * sizeof(float);
   printf("Loaded '%s', %d x %d pixels\n", imageFilename, width, height);
@@ -207,7 +221,7 @@ void runTest(int argc, char **argv) {
   // checkCudaErrors(cudaBindTextureToArray(tex, cuArray, channelDesc));
 
   // checkCudaErrors(cudaMemcpy(hData, inputData, size, cudaMemcpyHostToDevice));
-  checkCudaErrors(cudaMemcpy(hData, input1, size, cudaMemcpyHostToDevice));
+  checkCudaErrors(cudaMemcpy(hData, INPUT_RAW, size, cudaMemcpyHostToDevice));
 
   dim3 dimBlock(16, 16, 1);
   dim3 dimGrid(width / dimBlock.x, height / dimBlock.y, 1);
@@ -239,13 +253,24 @@ void runTest(int argc, char **argv) {
   float *hOutputData = (float *) malloc(size);
   // copy result from device to host
   checkCudaErrors(cudaMemcpy(hOutputData, dData, size, cudaMemcpyDeviceToHost));
-
+  // checkCudaErrors(cudaDeviceSynchronize());
+  // memcpy(hOutputData, INPUT_RAW, size);
+  // memset(hOutputData, 0, size);
+  
   // Write result to file
   char outputFilename[1024];
   strcpy(outputFilename, imagePath);
   strcpy(outputFilename + strlen(imagePath) - 4, "_out.pgm");
   sdkSavePGM(outputFilename, hOutputData, width, height);
   printf("Wrote '%s'\n", outputFilename);
+  
+  // {
+  //   FILE * pFile;
+  //   pFile = fopen ("outputDataFile.txt", "wb");
+  //   printf("output[0]: %f\n", hOutputData[0]);
+  //   fwrite(hOutputData, 128, 1, pFile);
+  //   fclose(pFile);
+  // }
 
   // Write regression file if necessary
   if (checkCmdLineFlag(argc, (const char **) argv, "regression"))

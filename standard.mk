@@ -1,7 +1,7 @@
 SHELL=/bin/bash
 MKDIR=mkdir -pv
 RM=rm -fv
-MAKE=make
+MAKE=make -f standard.mk
 export CC=gcc
 export CXX=g++
 export NVCC=nvcc
@@ -19,7 +19,7 @@ export CCFLAGS=-std=c++11 -O2 $(CXXWARNS) -iquote $(INCLUDE)
 # =================
 # Register binary targets here then add rules at the bottom
 # =================
-TARGETS=standard diff #hello
+TARGETS=standard diff p6p5 #hello
 
 # =================
 # General rules
@@ -50,14 +50,12 @@ $(LIBDIR)/%.o: $(SRCDIR)/%.cc
 $(LIBDIR)/%.o: $(SRCDIR)/%.cu
 	$(NVCC) -c -o $@ $<
 
+$(BINDIR)/%: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -o $@ $^
+
 # =================
 # Binary targets
 # =================
 $(BINDIR)/hello: driver.o
 	$(NVCC) -o $@ $^
 
-$(BINDIR)/standard: $(SRCDIR)/standard.c
-	$(CC) $(CFLAGS) -o $@ $^
-
-$(BINDIR)/diff: $(SRCDIR)/diff.c
-	$(CC) $(CFLAGS) -o $@ $^

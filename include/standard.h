@@ -9,4 +9,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 typedef unsigned char color;
+#define DIM 512
+#define P5
+
+#ifdef P5
+#define MagicNumber '5'
+#endif
+
+#ifdef P6
+#define MagicNumber '6'
+#endif
+
 #endif
