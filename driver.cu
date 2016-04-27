@@ -59,12 +59,16 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
   const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
   //const unsigned int tid = threadIdx.y * blockDim.x + threadIdx.x; 
 
-  if( (x >= (width - 1)) || (y >= height - 1) || (x == 0) || (y == 0)) return;
+  int radiusX = filterSize / 2;
+  int radiusY = filterSize / 2;
+
+  // if( (x >= (width - radiusX)) || (y >= height - radiusY) || (x == 0) || (y == 0)) return;
+  if( (x >= (width - radiusX)) || (y >= height - radiusY) || (x == 0) || (y == 0)) return;
 
   // --- Fill array private to the threads
   iterator = 0;
-  for (int row = x - 1; row <= x + 1; row++) {
-    for (int column = y - 1; column <= y + 1; column++) {
+  for (int row = x - radiusX; row <= x + radiusX; row++) {
+    for (int column = y - radiusY; column <= y + radiusY; column++) {
       window[iterator] = inputData[column * width + row];
       iterator++;
     }
