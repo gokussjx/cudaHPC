@@ -1,0 +1,259 @@
+GPU Device 0: "GeForce GT 740M" with compute capability 3.5
+
+Loaded 'lena.pgm', 512 x 512 pixels
+Processing time: 4.644000ms
+56.45 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.641000ms
+56.48 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.640000ms
+56.50 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.650000ms
+56.38 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.645000ms
+56.44 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.642000ms
+56.47 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.638000ms
+56.52 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.638000ms
+56.52 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.650000ms
+56.38 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 4.643000ms
+56.46 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 255123/262144 97.322%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+Processing time: 192.488007ms
+1.36 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.436005ms
+1.38 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.207993ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.136993ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.210999ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.158005ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.158997ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.082993ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.175995ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 189.272995ms
+1.39 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 259378/262144 98.945%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+Processing time: 1563.928955ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1563.286987ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1563.765991ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1563.956055ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1563.615967ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1563.645996ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1563.947021ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1564.031982ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1564.229980ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1565.053955ms
+0.17 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 257925/262144 98.391%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+Processing time: 6192.315918ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6192.529785ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6190.053223ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.347168ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.284180ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.711914ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.938965ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.610840ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.478027ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6191.750977ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 255724/262144 97.551%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+Processing time: 3.420000ms
+76.65 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.421000ms
+76.63 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.422000ms
+76.61 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.440000ms
+76.20 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.428000ms
+76.47 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.429000ms
+76.45 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.428000ms
+76.47 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.489000ms
+75.13 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.425000ms
+76.54 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 3.416000ms
+76.74 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 255123/262144 97.322%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+Processing time: 204.186005ms
+1.28 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.311005ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 201.979996ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 201.705002ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.207993ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.244995ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.214996ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.223999ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.085007ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 202.283005ms
+1.30 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 259346/262144 98.933%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
+Processing time: 1677.362061ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1680.987061ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1682.318970ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1679.167969ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1679.595947ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1678.630981ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1677.228027ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1678.197998ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1677.745972ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 1679.452026ms
+0.16 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 257876/262144 98.372%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX=XXXXXXXXXXXXXXXXXXX]
+Processing time: 6990.485840ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6955.202148ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 7020.220215ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 7046.594238ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6976.943848ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 6929.019043ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 7037.172852ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 7044.407227ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 7019.816895ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Processing time: 7058.418945ms
+0.04 Mpixels/sec
+Wrote 'lena_out.pgm'
+Match 255657/262144 97.525%
+[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]
