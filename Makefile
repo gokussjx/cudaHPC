@@ -215,6 +215,8 @@ endif
 
 # Target rules
 all: build
+	make -f standard.mk
+	cd ..
 
 build: driver
 
@@ -239,5 +241,6 @@ run: build
 clean:
 	rm -f driver driver.o lena_out.pgm
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/driver
+	rm -rf bin/*
 
 clobber: clean

@@ -15,6 +15,9 @@
 #define DIMENSION 512
 #define INPUT_RAW inputData
 
+// Exit true
+bool testResult = true;
+
 // Median Filter KERNEL
 __global__ void medianFilterKernel(float *inputData, float *outputData, int width, int height, int filterSize)
 {
