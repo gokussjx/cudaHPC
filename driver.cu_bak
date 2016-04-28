@@ -15,17 +15,24 @@
 #define DIMENSION 512
 #define INPUT_RAW inputData
 
-// Median Filter KERNEL
+// #define MIN_EPSILON_ERROR 5e-3f
+
+// Auto-Verification Code
+bool testResult = true;
+
+// Perform Median Filter on data
 __global__ void medianFilterKernel(float *inputData, float *outputData, int width, int height, int filterSize)
 {
 
-  // Specify window size
   const unsigned int windowSize = filterSize * filterSize;
   float window[DIMENSION];
+
+  int iterator;
 
   // calculate normalized texture coordinates
   const unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
   const unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
+  //const unsigned int tid = threadIdx.y * blockDim.x + threadIdx.x; 
 
   int radiusX = filterSize / 2;
   int radiusY = filterSize / 2;
@@ -37,7 +44,7 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
   }
 
   // --- Fill array private to the threads
-  int iterator = 0;
+  iterator = 0;
   for (int row = x - radiusX; row <= x + radiusX; row++) {
     for (int column = y - radiusY; column <= y + radiusY; column++) {
       if (iterator < windowSize && iterator >= 0) {
@@ -59,11 +66,12 @@ __global__ void medianFilterKernel(float *inputData, float *outputData, int widt
     window[minVal] = temp;
   }
 
-  // --- Pick the middle one. It has the median!
+  // --- Pick the middle one
   outputData[y * width + x] = window[windowSize/2]; 
 }
 
-// Forward Declaration
+////////////////////////////////////////////////////////////////////////////////
+// Declaration, forward
 void runTest(int argc, char **argv);
 
 int main(int argc, char **argv) {
@@ -107,11 +115,9 @@ void runTest(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  // Load image data to variable, store width and height
   float *inputData = NULL;
   sdkLoadPGM(imagePath, &inputData, &width, &height);
 
-  // Allocate size
   unsigned int size = width * height * sizeof(float);
   printf("Loaded '%s', %d x %d pixels\n", imageFilename, width, height);
 
@@ -123,10 +129,8 @@ void runTest(int argc, char **argv) {
   float *dData = NULL;
   checkCudaErrors(cudaMalloc((void **) &dData, size));
 
-  // Copy image data from host to device
   checkCudaErrors(cudaMemcpy(hData, INPUT_RAW, size, cudaMemcpyHostToDevice));
 
-  // Timing analysis loops
   short windowSizeHolder[] = {3, 7, 11, 15};
   short blockSizeHolder[] = {8, 16};
 
@@ -134,17 +138,14 @@ void runTest(int argc, char **argv) {
   for(short blockSizeIndex = 0; blockSizeIndex < 2; blockSizeIndex++) {
     // Loop windowSize: 3, 7, 11, 15
     for(short windowSizeIndex = 0; windowSizeIndex < 4; windowSizeIndex++) {
-      // Iterate each, 10 times
       for(short loop = 0; loop < 10; loop++) {
 
-        // Specify block and grid dimensions
         dim3 dimBlock(blockSizeHolder[blockSizeIndex], blockSizeHolder[blockSizeIndex], 1);
         dim3 dimGrid(width / dimBlock.x, height / dimBlock.y, 1);
 
         // Warmup
         medianFilterKernel<<<dimGrid, dimBlock, 0>>>(hData, dData, width, height, windowSizeHolder[windowSizeIndex]);
 
-        // Synchronize, and start timer
         checkCudaErrors(cudaDeviceSynchronize());
         StopWatchInterface *timer = NULL;
         sdkCreateTimer(&timer);
@@ -155,10 +156,9 @@ void runTest(int argc, char **argv) {
         // Check if kernel execution generated an error
         getLastCudaError("Kernel execution failed");
 
-        // Synchronize, and stop timer
         checkCudaErrors(cudaDeviceSynchronize());
         sdkStopTimer(&timer);
-        printf("Processing time: %fms\n", sdkGetTimerValue(&timer));
+        printf("Processing time: %f (ms)\n", sdkGetTimerValue(&timer));
         printf("%.2f Mpixels/sec\n",
                (width *height / (sdkGetTimerValue(&timer) / 1000.0f)) / 1e6);
         sdkDeleteTimer(&timer);
@@ -172,17 +172,10 @@ void runTest(int argc, char **argv) {
         // Write result to file
         sdkSavePGM(outputFilename, hOutputData, width, height);
         printf("Wrote '%s'\n", outputFilename);
-      }
-
-      // Ask Golden function to generate its output, compare and provide match info
-      char goldenFunction[2048];
-      sprintf(goldenFunction, "bin/standard %d lena.pgm > lena_out_gold.pgm", windowSizeHolder[windowSizeIndex]);
-      system(goldenFunction);
-      system("bin/diff lena_out_gold.pgm lena_out.pgm");      
+      }      
     }
   }
 
-  // Free data
   checkCudaErrors(cudaFree(dData));
   free(imagePath);
   free(inputData);
